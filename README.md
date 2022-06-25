@@ -1,2 +1,2 @@
-# gunsafe
-A decentralized password vault built on Gun DB
+# Gunsafe
+A CLI password manager utility for Node, built on [Gun DB](https://github.com/amark/gun)

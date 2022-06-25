@@ -1,0 +1,33 @@
+{
+  "name": "gunsafe",
+  "version": "1.0.0",
+  "description": "A CLI password manager utility for Node, built on Gun DB",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "gunsafe": "index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/draeder/gunsafe.git"
+  },
+  "keywords": [
+    "password",
+    "vault"
+  ],
+  "author": "Daniel Raeder",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/draeder/gunsafe/issues"
+  },
+  "homepage": "https://github.com/draeder/gunsafe#readme",
+  "dependencies": {
+    "clipboardy": "^3.0.0",
+    "gun": "^0.2020.1237",
+    "jssha": "^3.2.0",
+    "sinon": "^14.0.0"
+  }
+}
