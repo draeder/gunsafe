@@ -17,7 +17,7 @@ What would you like to do? >
 
 ## Gunsafe Commands
 ### `insert <record name>`
-Begins the password insert wizard.
+Begins the password record insert wizard.
 
 ### `get <record name> [--show]`
 Gets a password record by its name and save the password to the clipboard. Optionally pass `--show` to show the password in the returned results.
