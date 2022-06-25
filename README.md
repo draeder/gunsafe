@@ -10,7 +10,7 @@ Gunsafe currently stores the SEA encryption keys as environment variables in `.e
 npm i gunsafe -g
 ```
 ## Usage
-```js
+```
 > gunsafe
 What would you like to do? >
 ```
