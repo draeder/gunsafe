@@ -6,24 +6,25 @@ import readline from 'readline'
 import Gun from 'gun'
 import SEA from 'gun/sea.js'
 import clipboardy from 'clipboardy'
+import totp from 'totp-generator'
+import base32 from 'hi-base32'
 
-let gun = new Gun({peers: ['https://relay.peer.ooo/gun', 'https://gunjs.herokuapp.com/gun']})
-let pair = await SEA.pair()
-
-let commands = `
+let help = `
 Gunsafe commands:
   insert <record name>                - Insert or update a password record
   show                                - Print this session's most recent password object to the terminal
   list [ --deleted ]                  - List all password record names
                                         Use --deleted to also show previously deleted record names
-  get [ --show ] <record name>        - Get a stored password record by name. Password is stored in the clipboard.
+  get <record name> [ --show ]        - Get a stored password record by name. Password is stored in the clipboard.
                                         Use --show to also show the password
   delete <record name>                - Delete a stored password by name
   clear                               - Clear the console and the last password object from memory
-  quit                                - Exits Gunsafe
-  ?                                   - Prints this help
+  quit                                - Exit Gunsafe
+  ?                                   - Print this help
 `
 
+let gun = new Gun()//{peers: ['https://relay.peer.ooo/gun', 'https://gunjs.herokuapp.com/gun']})
+let pair = await SEA.pair()
 if(process
   && process.env.GUNSAFE_PUB
   && process.env.GUNSAFE_EPUB
@@ -36,6 +37,7 @@ if(process
     epub: process.env.GUNSAFE_EPUB || pair.epub,
     epriv: process.env.GUNSAFE_EPRIV || pair.epriv
   }
+  if(!pair) pair = await SEA.pair()
 } 
 else if(process) {
   fs.appendFile('./.env',
@@ -48,25 +50,101 @@ else if(process) {
     throw new Error(err)
   })
 }
+init(pair)
 
-gun.user().auth(pair)
+async function init(pair){
+  gun.user().leave()
+  gun.user().auth(pair)
+}
+
+gun.on('auth', ack => {
+  console.log('Authenticated')
+  main()
+})
 
 let password = {}
 
-gun.on('auth', ack => {
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+})
+
+async function main(){
   console.clear()
 
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-  })
+  let obj = {
+    name: 'gunsafe',
+    address: '',
+    username: '',
+    pass: pair,
+    notes: 'This is your Gunsafe SEA pair. Do not share this with anyone!'
+  }
 
-  let question = () => rl.question('What would you like to do? > ', function (command) {
+  let message = await SEA.encrypt(JSON.stringify(obj), pair)
+  gun.user().get('gunsafe').get('*gunsafe').put(JSON.stringify(message))
+
+  let question = () => rl.question('What would you like to do? > ', async function (command) {
     command = command.split(' ')
 
     if(command[0] === '?'){
-      console.log(commands)
+      console.log(help)
       question()
+    }
+    else if(command[0] === 'new'){
+      init(pair)
+      question()
+    }
+    else if (command[0] === 'pair'){
+      console.log('Gunsafe key:', pair.epub)
+      rl.question('Are you the connection target? > ', async answer => {
+        let token
+        if(answer === 'yes'){
+          let secret = base32.encode(pair.epub)
+          token = totp(secret, {
+            digits: 8,
+            period: 30,
+          })
+          console.log(token)
+          let message = await SEA.encrypt(pair, token)
+          gun.get('gunsafe').get(pair.epub).put(message)
+
+          const interval = setInterval(async () => {
+            let secret = base32.encode(pair.epub)
+            token = totp(secret, {
+              digits: 8,
+              period: 30,
+            })
+            let sec = new Date().getSeconds()
+            if (sec === 0 || sec === 30) {
+              console.log(token)
+              let message = await SEA.encrypt(pair, token)
+              gun.get('gunsafe').get(pair.epub).put(message)
+            }
+          }, 1000)
+          gun.user().get('gunsafe').get('connected').on(data => {
+            if(data === true) {
+              clearInterval(interval)
+              console.log('Syncronized another device!\r\n')
+              question()
+            }
+          })
+        }
+        if(answer === 'no'){
+          rl.question('What is the connection key? > ', key => {
+            rl.question('What is the current token? > ', token => {
+              gun.get('gunsafe').get(key).on(async data => {
+                let message = await SEA.decrypt(data, token)
+                gun.get('gunsafe').get(key).off()
+                gun.user().get('gunsafe').get('connected').put(true)
+                init(message)
+                gun.user().get('gunsafe').get('connected').put(false)
+              })
+            })
+          })
+        }
+      })
+      question()
+
     }
     else if(command[0] === 'clear'){
       password = {}
@@ -119,7 +197,7 @@ gun.on('auth', ack => {
       process.exit(1)
     }
     else {
-      console.log(`Invalid command '${command}'. Type 'help' to see all commands.\n\r`)
+      console.log(`Invalid command '${command}'. Type '?' to see all commands.\n\r`)
       question()
     }
   })
@@ -205,25 +283,26 @@ gun.on('auth', ack => {
     let result = new Promise((resolve, reject)=>{
       gun.user().get('gunsafe').get(name).on(async data => {
         if(data === null) {
-          resolve('The record for ' + name + ' was previously deleted.\n\r')
-          return //question()
+          return
         }
+        //if(typeof data === 'string')
         data = JSON.parse(data)
         let pw = await SEA.decrypt(data, pair)
         gun.user().get('gunsafe').get(data.name).off()
         resolve(pw)
       })
       setTimeout(()=>{
-        resolve('Record not found. Type \'list\' to show all record names.\n\r')
-    }, 50)
+        resolve('Record not found. Type \'list\' to print all record names.\n\r')
+      }, 50)
     })
 
     password = await result
     if(password.pass === undefined){
-      console.log('Record not found.\r\n')
+      console.log('Record not found: ' + name + '. Type \'list\' to print all records.\r\n')
       password = {}
       return question()
     }
+    if(typeof password.pass === 'object') password.pass = JSON.stringify(password.pass)
     clipboardy.writeSync(password.pass)
     if(typeof password != 'object') {
       console.log('Record not found.\n\r')
@@ -240,49 +319,39 @@ gun.on('auth', ack => {
     console.log('Password saved to clipboard!\n\r')
     question()
   }
-
   async function list(deleted){
-    let result = new Promise((resolve, reject)=>{
-      gun.user().get('gunsafe').once(data => {
-        if(data === undefined) {
-          console.log('No records found.\r\n')
-          return question()
-        }
-        let items = Object.keys(data)
-        if(items[0] === '_') items.shift()
-        resolve(items)
-      })
-    })
-    result = await result
     console.log()
-    let c = 0
-    let items = []
-    result.forEach(el => {
-      gun.user().get('gunsafe').get(el).once(data => {
-        if(data === null) items.push('[ deleted ] ' + el)
-        else items.push(el)
-      })
-    })
-    items.forEach(el => {
-      if(deleted && el){
-        console.log(el)
-      } else if(!el.includes('deleted') && el){
-        console.log(el)
+    gun.user().get('gunsafe').once(data => {
+      if(data === undefined) {
+        console.log('No records found.\r\n')
+        return question()
       }
+      let items = Object.keys(data)
+      if(items[0] === '_') items.shift()
+      for(let item in items){
+        gun.user().get('gunsafe').get(items[item]).once(data => {
+          if(data) {
+            console.log(items[item])
+          }
+          else {
+            if(deleted) console.log('[ deleted ]', items[item])
+          }
+        })
+      }
+      setTimeout(()=>{
+        console.log()
+        question()
+      }, 50)
     })
-    items.length = 0
-    console.log()
-    question()
   }
 
   async function del(name){
-
     gun.user().get('gunsafe').get(name).once(data => {
       if(!data){
-        console.log(name, 'does not exist.\r\n')
+        console.log('The record,', name + ',', 'does not exist. Type \'list\' to print all records.\r\n')
         return question()
       } else {
-        rl.question('Are you sure you want to delete this record? > ', answer => {
+        rl.question(`Are you sure you want to delete this record: ${name}? > `, answer => {
           if(['yes', 'Yes', 'y', 'Y', 'true', 'True', 1].includes(answer)){
             gun.user().get('gunsafe').get(name).put(null)
             console.log(name, 'has been deleted.')
@@ -293,4 +362,4 @@ gun.on('auth', ack => {
       }
     })
   }
-})
+}
