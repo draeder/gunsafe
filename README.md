@@ -1,5 +1,5 @@
 # Gunsafe
-## A CLI password manager utility for Node, built on [Gun DB](https://github.com/amark/gun)
+## A CLI password manager utility for NPM, built on [Gun DB](https://github.com/amark/gun)
 
 Gun DB is a decentralized graph database. Passwords are encrypted with Gun's SEA security library, then stored in the database's user space, which means the records can only be read and altered by the signed in user.
 
