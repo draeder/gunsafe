@@ -1,6 +1,6 @@
 {
   "name": "gunsafe",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "A CLI password manager utility for Node, built on Gun DB",
   "main": "index.js",
   "type": "module",

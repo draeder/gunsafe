@@ -13,8 +13,9 @@ let help = `
 Gunsafe commands:
   insert <record name>                - Insert or update a password record
   show                                - Print this session's most recent password object to the terminal
-  list [ --deleted ]                  - List all password record names
+  list [ --deleted, --hidden ]        - List all password record names
                                         Use --deleted to also show previously deleted record names
+                                        Use --hidden to also show Gunsafe hidden records
   get <record name> [ --show ]        - Get a stored password record by name. Password is stored in the clipboard.
                                         Use --show to also show the password
   delete <record name>                - Delete a stored password by name
@@ -184,8 +185,10 @@ async function main(){
     }
     else if(command[0] === 'list'){
       let deleted = false
-      if(command[1]==='--deleted') deleted = true
-      list(deleted)
+      let hidden = false
+      if(command.includes('--deleted')) deleted = true
+      if(command.includes('--hidden')) hidden = true
+      list(deleted, hidden)
     }
     else if(command[0] === 'delete'){
       command.shift()
@@ -307,7 +310,8 @@ async function main(){
       return question()
     }
 
-    password.pass = password.pass
+    console.log(password)
+    if(typeof password.pass === 'object') password.pass = JSON.stringify(password.pass)
     clipboardy.writeSync(password.pass)
 
     console.log('\n\rName:', password.name)
@@ -320,7 +324,7 @@ async function main(){
     console.log('Password saved to clipboard!\n\r')
     question()
   }
-  async function list(deleted){
+  async function list(deleted, hidden){
     console.log()
     gun.user().get('gunsafe').once(data => {
       if(data === undefined) {
@@ -331,11 +335,14 @@ async function main(){
       if(items[0] === '_') items.shift()
       for(let item in items){
         gun.user().get('gunsafe').get(items[item]).once(data => {
-          if(data) {
+          if(data && !items[item].includes('*')) {
             console.log(items[item])
           }
-          else {
-            if(deleted) console.log('[ deleted ]', items[item])
+          else if(hidden && items[item].includes('*')){
+            console.log('[ hidden ]', items[item])
+          }
+          else if(deleted && !items[item].includes('*')) {
+            console.log('[ deleted ]', items[item])
           }
         })
       }
