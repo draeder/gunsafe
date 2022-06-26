@@ -1,6 +1,6 @@
 {
   "name": "gunsafe",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A CLI password manager utility for Node, built on Gun DB",
   "main": "index.js",
   "type": "module",
@@ -28,5 +28,9 @@
     "clipboardy": "^3.0.0",
     "gun": "^0.2020.1237",
     "totp-generator": "^0.0.13"
-  }
+  },
+  "directories": {
+    "test": "test"
+  },
+  "devDependencies": {}
 }

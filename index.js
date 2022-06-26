@@ -121,10 +121,11 @@ async function main(){
               gun.get('gunsafe').get(pair.epub).put(message)
             }
           }, 1000)
-          gun.user().get('gunsafe').get('connected').on(data => {
+          gun.user().get('gunsafe').get('*gunsafe_connected').on(data => {
             if(data === true) {
               clearInterval(interval)
               console.log('Syncronized another device!\r\n')
+              gun.user().get('gunsafe').get('*gunsafe_connected').put(null)
               question()
             }
           })
@@ -135,7 +136,7 @@ async function main(){
               gun.get('gunsafe').get(key).on(async data => {
                 let message = await SEA.decrypt(data, token)
                 gun.get('gunsafe').get(key).off()
-                gun.user().get('gunsafe').get('connected').put(true)
+                gun.user().get('gunsafe').get('*gunsafe_connected').put(true)
                 init(message)
                 gun.user().get('gunsafe').get('connected').put(false)
               })
@@ -144,7 +145,6 @@ async function main(){
         }
       })
       question()
-
     }
     else if(command[0] === 'clear'){
       password = {}
@@ -285,7 +285,6 @@ async function main(){
         if(data === null) {
           return
         }
-        //if(typeof data === 'string')
         data = JSON.parse(data)
         let pw = await SEA.decrypt(data, pair)
         gun.user().get('gunsafe').get(data.name).off()
@@ -297,18 +296,20 @@ async function main(){
     })
 
     password = await result
-    if(password.pass === undefined){
+    if(password && password.pass === undefined){
       console.log('Record not found: ' + name + '. Type \'list\' to print all records.\r\n')
       password = {}
       return question()
     }
-    if(typeof password.pass === 'object') password.pass = JSON.stringify(password.pass)
-    clipboardy.writeSync(password.pass)
     if(typeof password != 'object') {
       console.log('Record not found.\n\r')
       password = {}
       return question()
     }
+
+    password.pass = password.pass
+    clipboardy.writeSync(password.pass)
+
     console.log('\n\rName:', password.name)
     console.log('Address:', password.address)
     console.log('Username:', password.username)
