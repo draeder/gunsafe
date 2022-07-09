@@ -19,9 +19,17 @@ This makes Gunsafe relatively versitile. It could be used to create a shared cha
 Since this is early release software, please use due dilligence when building with it. Please report any bugs, questions, PRs, or anything else [here](https://github.com/draeder/gunsafe).
 
 ## Install
+### API
 ```js
 npm i gunsafe
 ```
+
+### CLI
+```js
+npm i gunsafe -g
+```
+
+If you're using the gunsafe CLI in VS Code, you may notice each instance of VS Code creates a new gunsafe key pair. You can work around this by pairing your instances in each VS Code instance.
 
 # Gunsafe Example CLI
 Gunsafe has an alpha-state CLI available as an example of its capabilities. You may install it with `npm i --g` if you want it available to all of your terminal windows.
