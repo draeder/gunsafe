@@ -56,7 +56,7 @@ Quit gunsafe
 ### `keypair`
 Shows your gunsafe session keypair. This is the password to your vault, so use this command with caution.
 
-### `peers [ optional list of comma separated Gun relay peers without brackets]` 
+### `peers [ optional list of space separated Gun relay peers without brackets]` 
 Display (default) or set the list of peers to enable online mode.
 
 ### `pair < optional pairing key string >`
