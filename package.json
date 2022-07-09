@@ -1,6 +1,6 @@
 {
   "name": "gunsafe",
-  "version": "1.5.0",
+  "version": "2.0.0",
   "description": "A decentralized secure vault API built on Gun chain",
   "main": "index.js",
   "type": "module",
@@ -15,8 +15,10 @@
     "url": "git+https://github.com/draeder/gunsafe.git"
   },
   "keywords": [
+    "decentralized",
     "password",
-    "vault"
+    "vault",
+    "storage"
   ],
   "author": "Daniel Raeder",
   "license": "MIT",
@@ -26,10 +28,11 @@
   "homepage": "https://github.com/draeder/gunsafe#readme",
   "dependencies": {
     "btoa": "^1.2.1",
-    "carets": "^2.0.2",
+    "carets": "^2.5.0",
     "clipboardy": "^3.0.0",
     "elliptic": "^6.5.4",
     "gun": "^0.2020.1237",
+    "gunsafe": "^1.5.0",
     "node-forge": "^1.3.1",
     "node-machine-id": "^1.1.12",
     "totp-generator": "^0.0.13"

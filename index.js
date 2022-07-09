@@ -1,3 +1,4 @@
+import EventEmitter from 'events'
 import Gun from 'gun'
 import SEA from 'gun/sea.js'
 import Pair from './pair.js'
@@ -5,10 +6,12 @@ import Pair from './pair.js'
 Gun.chain.gunsafe = function(opts) {
   const gun = this
 
+  const events = new EventEmitter()
+
   let pair
   gun.gunsafe = {
-    name: async (name) => {
-      pair = await Pair(name)
+    name: async (key, name) => {
+      pair = await Pair(key, name)
       gun.user().auth(pair)
     },
     put: async (name, data) => {
@@ -16,33 +19,36 @@ Gun.chain.gunsafe = function(opts) {
       if(typeof data === 'string') data = await SEA.encrypt(data, pair)
       gun.user().get('gunsafe').get('items').get(name).put(data)
       gun.user().get('gunsafe').get('list').set(name)
-      gun.user().get('gunsafe').get('list').off()
     },
     get: async (name, run, global, cb) => {
       gun.user().get('gunsafe').get('items').get(name).once(async data => {
         if(!data) return cb('Record not found')
         data = await SEA.decrypt(data, pair)
-        //gun.gunsafe.emit('doc', data)
-        try{
-          data = data.join(' ')
-          if(!run) cb(data)
-        } catch {}
-        try{
-          data = JSON.parse(data)
-        } catch {}
+        try { data = data.join(' '); if(!run) cb(data) } catch {}
+        try { data = JSON.parse(data) } catch {}
+
+        if(typeof data === 'object'){
+          let index = Object.keys(data)
+          let str
+          for(let i in index){
+            if(data[index[i]]){
+              str = str + data[index[i]]
+            }
+          }
+          
+          str = str.substring(9)
+          data = str
+        }
 
         if(run){
           try{
             if(global === false) {
-              let fn = new Function(data)
-              fn()
-            } else {
-              eval(data)
+              console.log('Running Function')
+              let fn = new Function(data); 
+              fn() 
             }
-          }
-          catch {
-            cb(data)
-          }
+            else eval(data)
+          } catch { cb(data) }
         } else {
           cb(data)
         }
@@ -55,12 +61,8 @@ Gun.chain.gunsafe = function(opts) {
       gun.user().get('gunsafe').get('list').map().once(data => {
         if(last.includes(data)) return
         gun.user().get('gunsafe').get('items').get(data).once(d => {
-          if(d === null && del) {
-            cb('[ deleted ] ' + data)
-          }
-          else if(d !== null && !del){ 
-            cb(data)
-          }
+          if(d === null && del) { cb('[ deleted ] ' + data) }
+          else if(d !== null && !del){ cb(data) }
         })
         last.push(data)
       })
@@ -103,8 +105,12 @@ Gun.chain.gunsafe = function(opts) {
           })
         })
       }
+    },
+    session: async (pwd, cb) => {
+      let keypair = await SEA.pair()
+      pair(pwd)
+      cb(keypair)
     }
   }
-
   return gun
 }

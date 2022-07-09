@@ -23,8 +23,14 @@ Since this is early release software, please use due dilligence when building wi
 npm i gunsafe
 ```
 
-# Example CLI
+# Gunsafe Example CLI
 Gunsafe has an alpha-state CLI available as an example of its capabilities. You may install it with `npm i --g` if you want it available to all of your terminal windows.
+
+## Usage
+```
+> gunsafe
+```
+Gunsafe CLI accepts commands from the terminal when it is running.
 
 ## CLI commands
 ### `CTRL-W` or `OPTION-BACKSPACE`
@@ -45,19 +51,23 @@ Shows your gunsafe session keypair. This is the password to your vault, so use t
 ### `peers [ optional list of comma separated Gun relay peers without brackets]` 
 Display (default) or set the list of peers to enable online mode.
 
-### `pair [ optional pairing key without brackets ]`
-Display (default) a pairing key you may use to pair other instances, or pass a pairing key in to establish syncronization with another instance.
+### `pair < optional pairing key string >`
+Display a pairing key to pair other instances with this one, or pass a pairing key string in to establish syncronization with another instance (local or remote).
 
-### `put [ key name of your data ] --data [ your data ]`
-Command to create a key-value pair. Brackets are not required.
+### `put < key name string of your data > --data < your data string >`
+Command to put a key-value pair to this gunsafe instance
 
 #### `--data`
 Without this argument, the entire passed in string will be used as your key name and the record will have no data, so it will be unretrievable.
 
-### `get [ key name of desired record ] [ --run || --global ]`
-Retrieve the stored key name's data and optionally run it if it code in a local context (default), or global context with `--global`.
+### `get < key name string of desired record > [ --run ] [ --global ]`
+Retrieve the stored key name's data
 
-The ability to run stored code adds some additional possibilities to the versatility of Gunsafe, but use with care! The `--run --global` argument uses `eval()`, for example. The default uses a function constructor that only runs in the local scope where it is called.
+Optionally run the record code with `--run`. By default it will run in a local scope context in which it was envoked, but may also be run in a global context with `--global`. If the record is not code, it will return the gunsafe prompt.
+
+The ability to run stored code adds some additional possibilities to the versatility of Gunsafe, but use with care! The `--run --global` argument uses `eval()`, for example. While the default `--run` argument runs the code in local scope context. 
+
+> Neither approaches should be consiered 'secure', but have been provided with this CLI as a way to quickly test code snippets you may save to your gunsafe.
 
 ### `list [ --deleted ]`
 List the available record key names ( default ), or optionally list only the deleted records with `--deleted`.

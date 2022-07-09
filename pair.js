@@ -5,10 +5,7 @@ import btoa from 'btoa'
 import ID from 'node-machine-id'
 const ec = EC.ec
 
-export default async function Pair(salt) {
-  let id = ID.machineIdSync()
-  let pwd = id
-  
+export default async function Pair(pwd, salt) {  
   forge.options.usePureJavaScript = true
   return new Promise((resolve, reject) => {
 

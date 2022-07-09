@@ -1,17 +1,19 @@
 #! /usr/bin/env node
+import fs from 'fs'
 import '../index.js'
 import Gun from 'gun'
+import SEA from 'gun/sea.js'
 import Carets from 'carets'
 
 const gun = new Gun()
 gun.gunsafe()
 
-let caretParams = {
+let params = {
   caret: 'gunsafe > ',
   docCaret: 'gunsafe $ > '
 }
 
-let carets = new Carets(caretParams)
+let carets = new Carets(params)
 
 carets.prompt('gunsafe name > ')
 
@@ -21,8 +23,8 @@ carets.on('line', data => {
   if(!gun.gunsafe.keys && !authedUser) { 
     auth(line)
     setTimeout(()=>{
-      carets.prompt(caretParams.caret)
-    }, 1)
+      carets.prompt(params.caret)
+    })
   }
   if(line[0] === 'keypair') keypair(line)
   if(line[0] === 'peers') peers(line)
@@ -36,11 +38,20 @@ carets.on('line', data => {
 let yes = ['Y', 'y', 'yes', 'Yes', 'true', 'True', '1']
 let no = ['N', 'n', 'no', 'No', 'false', 'False', '0']
 
-function auth(line){
+async function auth(line){
   if(line === '\r') return console.log('The gunsafe name may not be empty.')
   authedUser = line.join(' ')
   console.log('Keypair for the gunsafe named,', authedUser + ', created.')
-  gun.gunsafe.name(authedUser)
+  let key
+  try {
+    key = fs.readFileSync('./key', err => {}).toString()
+    gun.gunsafe.name(key, authedUser)
+  }
+  catch {
+    let pair = await SEA.pair()
+    fs.writeFile('./key', pair.epriv, err => {})
+    gun.gunsafe.name(pair.epriv, authedUser)
+  }
 }
 
 function keypair(line){
@@ -59,36 +70,22 @@ async function pair(line){
   }
   else {
     let pair = await gun.gunsafe.pair()
-    carets.pause()
     console.log('\r\nYour pairing key', pair)
-    carets.resume()
-    carets.prompt()
+    carets.prompt(params.caret)
   }
 }
 
 function list(line){
-  carets.pause()
   let gone = false
   if(line.includes('--deleted')) gone = true
-  let timeout
   gun.gunsafe.list(gone, data => {
+    carets.prompt('')
     console.log(data)
-    timeout = setTimeout(()=>{
-      clearTimeout(timeout)
-      timeout = undefined
-    }, 50)
+    carets.prompt(params.caret)
   })
-  let interval = setTimeout(()=>{
-    if(!timeout){
-      carets.resume()
-      carets.prompt()
-      clearInterval(interval)
-    }
-  },100)
 }
 
 function put(line){
-  carets.pause()
   let dataIndex = line.indexOf('--data')
   let data = line.splice(dataIndex, line.length)
   data.shift()
@@ -101,14 +98,18 @@ function put(line){
   data = data.join(' ')
 
   gun.gunsafe.put(name, data)
-  carets.resume()
-  carets.prompt(caretParams.caret)
+  setTimeout(()=>carets.prompt(params.caret))
 }
 
 function putDoc(name, data){
-  console.log(name, data)
   gun.gunsafe.put(name, data)
 }
+
+carets.on('docmode', bool => {
+  if(bool) {
+    setTimeout(()=>carets.prompt(''))
+  }
+})
 
 function get(name){
   name.shift()
@@ -116,50 +117,46 @@ function get(name){
   let global = true
   if(name.includes('--run')) { 
     run = true
-    name =name.filter(v => v !== '--run')
+    name = name.filter(v => v !== '--run')
   }
   if(name.includes('--global')) {
     global = true
     name = name.filter(v => v !== '--global')
   }
   name = name.join(' ')
-  carets.pause()
   gun.gunsafe.get(name, run, global, data => {
+    carets.prompt('')
     console.log(data)
-    setTimeout(()=>{
-      carets.resume()
-      carets.prompt(caretParams.caret)
-    }, 1)
+    carets.prompt(params.caret)
   })
 }
 
 function del(line){
-  if(line) { 
+  if(line.length > 1) { 
     line.shift()
     line = line.join(' ')
     gun.gunsafe.delete(line)
   }
   else {
-    carets.pause()
-    setTimeout(()=>{
-      carets.resume()
-      carets.prompt('This will delete all of this gusafe\'s data. Continue? > ')
-    },1)
+
+    setTimeout(() => carets.prompt('This will delete all of this gusafe\'s data. Continue? > '))
     carets.on('line', data => {
       if(yes.includes(data)){
         gun.gunsafe.delete()
+        setTimeout(() => carets.prompt(params.caret))
       }
     })
   }
 }
 
-let doc = {}
-let docName = ''
-
 carets.on('doc', data => {
-  if(data && typeof data === 'string') docName = data
-  else if(Object.keys(data).length > 0){
+  let doc = {}
+  let keys = Object.keys(data)
+  let docname = data[Math.min(...keys)]
+  delete data[keys[0]]
+  if(keys.length > 0){
     doc = data
-    putDoc(docName, doc)
+    putDoc(docname, doc)
   }
+  carets.prompt(params.caret)
 })
