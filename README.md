@@ -34,6 +34,8 @@ If you're using the gunsafe CLI in VS Code, you may notice each instance of VS C
 # Gunsafe Example CLI
 Gunsafe has an alpha-state CLI available as an example of its capabilities. You may install it with `npm i --g` if you want it available to all of your terminal windows.
 
+> Note: The CLI currently stores the key in the current working directory. If you install this in a folder you are using with git, be sure to add `key` to your gitignore file to avoid leaking your secure key. This will be addressed in a future version by encrypting the key based on hardware signature.
+
 ## Usage
 ```
 > gunsafe
