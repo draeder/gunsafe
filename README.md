@@ -80,7 +80,7 @@ The ability to run stored code adds some additional possibilities to the versati
 ### `list [ --deleted ]`
 List the available record key names ( default ), or optionally list only the deleted records with `--deleted`.
 
-### `delete [ key name ]
+### `delete [ key name ]`
 Delete the record with the matching key name. Excluding the key name will destroy all of the records in your vault. Use caution.
 
 ## API
