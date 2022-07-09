@@ -105,11 +105,6 @@ Gun.chain.gunsafe = function(opts) {
           })
         })
       }
-    },
-    session: async (pwd, cb) => {
-      let keypair = await SEA.pair()
-      pair(pwd)
-      cb(keypair)
     }
   }
   return gun

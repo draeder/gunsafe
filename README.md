@@ -76,7 +76,64 @@ List the available record key names ( default ), or optionally list only the del
 Delete the record with the matching key name. Excluding the key name will destroy all of the records in your vault. Use caution.
 
 ## API
-This is a work in progress. Documentation will be updated shortly, but for now you may reference the CLI example code for a general idea.
+### `gun.gunsafe.name(key, name)`
+Creates a new gunsafe from the passed in key, and logs the instance into gunsafe for secure data storage and retrieval
+
+#### Example
+```js
+import SEA from 'gun/sea.js'
+import gunsafe from 'gunsafe'
+
+gun.gunsafe()
+
+let pair = await new SEA.pair()
+
+gun.gunsafe.name(pair.epriv, 'Unique gunsafe name')
+
+```
+
+### `gun.gunsafe.put(name : string, data : any)`
+Encrypts and puts a record into gunsafe with the name `name` and value `data`
+
+### `gun.gunsafe.get(name : string [, run : bool, global : bool, cb ])`
+Gets a record from gunsafe and optionally executes the record if it is runnable code
+
+#### `cb`
+A callback containing the record data
+
+If `run` and optionally `global` are passed in, the record will be executed if the code is runnalbe. If not, the record will be returned.
+
+#### `run`
+Runs the code using `new Function(string)`
+
+#### `global`
+Runs the code using `eval(string)`
+
+### `gun.gunsafe.list([deleted : bool ])`
+Returns the record names
+
+Optionally pass in `true` to show deleted record names
+
+### `gun.gunsafe.delete([, name : string ])`
+Deletes all of the records unless the record name is passed in.
+
+### `gun.gunsafe.peers([ peers : string])`
+Displays the connected peers
+
+Gunsafe starts in local-only mode by default. You may pass a list space-separated of peers in as a parameter to make gunsafe available across networks.
+
+#### Example
+```js
+gun.gunsafe.peers('https://relay.peer.ooo/gun https://gunjs.herokuapp.com/gun')
+```
+
+### `gun.gunsafe.pair([ key : string ])`
+Initiates gunsafe pairing and returns the pairing key
+
+If a `key` is passed in on another instance of gunsafe, the two instances will be paired and synchronized to each other.
+
+### `gun.gunsafe.key()`
+Returns the current gunsafe keypair. **Use with caution. This is your gunsafe instance's password.**
 
 # License
 MIT

@@ -54,14 +54,20 @@ async function auth(line){
   }
 }
 
-function keypair(line){
+function keypair(){
   let key = gun.gunsafe.key()
   console.log(key)
 }
 
 function peers(line){
-  let peers = gun.gunsafe.peers()
-  console.log(peers)
+  let peers
+  if(line && line[1]){
+    line.shift()
+    gun.gunsafe.peers(line)
+  } else {
+    peers = gun.gunsafe.peers()
+    console.log(peers)
+  }
 }
 
 async function pair(line){
@@ -97,7 +103,9 @@ function put(line){
   name = name.join(' ')
   data = data.join(' ')
 
-  gun.gunsafe.put(name, data)
+  gun.gunsafe.put(name, data, cb => {
+    console.log(cb)
+  })
   setTimeout(()=>carets.prompt(params.caret))
 }
 
