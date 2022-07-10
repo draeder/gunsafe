@@ -1,11 +1,10 @@
 import { $, question, YAML, chalk } from 'zx'
 import { io } from 'fsxx'
 import 'zx/globals'
-import yargs from 'yargs'
+import getArgs from '../cli/utils/arg.mjs'
 $.verbose = false
 let pkg = await io.json`package.json`
-let args = yargs(process.argv.slice(3)).argv
-let { message, version } = args
+let { message, version } = getArgs().argv
 
 // Version prompt ... (if not provided current version is used)
 if (version === undefined) {

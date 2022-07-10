@@ -4,25 +4,7 @@ import SEA from 'gun/sea.js'
 import Pair from './pair.js'
 import { lzObject } from 'lz-object'
 import os from 'os'
-const checkIfThis = {
-  isObject: (value) => {
-    return !!(value && typeof value === 'object' && !Array.isArray(value))
-  },
-  isNumber: (value) => {
-    return !!isNaN(Number(value))
-  },
-  isBoolean: (value) => {
-    if (value === 'true' || value === 'false' || value === true || value === false) {
-      return true
-    }
-  },
-  isString: (value) => {
-    return typeof value === 'string'
-  },
-  isArray: (value) => {
-    return Array.isArray(value)
-  },
-}
+
 /**
  * Were gonna work some magic with this info. Probably wont use them all
  */
