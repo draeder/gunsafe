@@ -2,7 +2,6 @@ let crypto = await import('crypto').then((WebCrypto) => { return WebCrypto.webcr
 import forge from 'node-forge'
 import EC from 'elliptic'
 import btoa from 'btoa'
-import ID from 'node-machine-id'
 const ec = EC.ec
 
 export default async function Pair(pwd, salt) {  
@@ -49,7 +48,7 @@ export default async function Pair(pwd, salt) {
     })
   })
 
-  function arrayBufToBase64UrlEncode(buf) {
+function arrayBufToBase64UrlEncode(buf) {
       let binary = ''
       let bytes = new Uint8Array(buf)
       for (let i = 0; i < bytes.byteLength; i++) {
@@ -75,7 +74,7 @@ export default async function Pair(pwd, salt) {
     }
     return key
   }
-
+//Hey dan whats this? 
   function b32(s) {
     let alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"
 
