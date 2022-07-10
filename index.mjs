@@ -4,6 +4,23 @@ import SEA from 'gun/sea.js'
 import Pair from './pair.js'
 import { lzObject } from 'lz-object'
 import os from 'os'
+export const checkIfThis = {
+  isObject: (value) => {
+    return !!(value && typeof value === 'object' && !Array.isArray(value))
+  },
+  isNumber: (value) => {
+    return !!isNaN(Number(value))
+  },
+  isBoolean: (value) => {
+    return value === 'true' || value === 'false' || value === true || value === false
+  },
+  isString: (value) => {
+    return typeof value === 'string'
+  },
+  isArray: (value) => {
+    return Array.isArray(value)
+  },
+}
 
 /**
  * Were gonna work some magic with this info. Probably wont use them all
@@ -21,7 +38,8 @@ const sys = {
   homedir: os.homedir(),
   endianness: os.endianness(),
   release: os.release(),
-  user: os.user(),
+  user: os.user,
+  hostname: os.hostname(),
 }
 /**
  * sea.works all our system info for node keys
@@ -109,18 +127,20 @@ Gun.chain.gunsafe = function (opts) {
   gun.gunsafe = {
     name: async (key, name) => {
       pair = await Pair(key, name)
-      gun.user().auth(pair, (ack) => {
-        if (ack.err) {
-          events.emit('error', ack.err)
-        }
-      })
+      return gun
+        .user()
+        .auth(pair, (ack) => {
+          if (ack.err) {
+            events.emit('error', ack.err)
+          }
+        })
+        .get()
+        .get(sys.user)
     },
     put: async (name, data) => {
       if (checkIfThis.isObject(data)) {
         data = await rsvEncryptCompress(data, pair)
-        data = lzObject.compress(data, {})
       }
-      if (checkIfThis.isString(data)) data = await SEA.encrypt(data, pair)
       gun.user().get('gunsafe').get('items').get(name).put(data)
       gun.user().get('gunsafe').get('list').set(name)
     },
@@ -141,17 +161,8 @@ Gun.chain.gunsafe = function (opts) {
             data = JSON.parse(data)
           } catch {}
 
-          if (typeof data === 'object') {
-            let index = Object.keys(data)
-            let str
-            for (let i in index) {
-              if (data[index[i]]) {
-                str = str + data[index[i]]
-              }
-            }
-
-            str = str.substring(9)
-            data = str
+          if (checkIfThis.isObject(data)) {
+            data = await rsvDecryptDcompress(data, pair)
           }
 
           if (run) {

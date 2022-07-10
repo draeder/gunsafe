@@ -1,12 +1,12 @@
 {
   "name": "chainlocker",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Command line interface for GUN relay-server deployment, gun resource routes, and secure data storage/retrevial",
   "main": "index.mjs",
   "type": "module",
   "scripts": {
     "prettier": "prettier --write '**/*.{json,mjs,ts,mts}'",
-    "push": "zx git/push.mjs"
+    "push": "zx scripts/push.mjs"
   },
   "bin": {
     "gunsafe": "cli/gunsafe.js"
@@ -44,6 +44,9 @@
   "devDependencies": {
     "@swc/cli": "^0.1.57",
     "@swc/core": "^1.2.211",
+    "@types/btoa": "^1.2.3",
+    "@types/elliptic": "^6.4.14",
+    "@types/node-forge": "^1.0.3",
     "@types/yargs": "^17.0.10",
     "prettier": "^2.7.1",
     "yargs": "^17.5.1"
