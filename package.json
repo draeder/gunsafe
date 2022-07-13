@@ -1,11 +1,11 @@
 {
   "name": "gunsafe",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "A decentralized secure vault API built on Gun chain",
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha"
   },
   "bin": {
     "gunsafe": "cli/gunsafe.js"
@@ -27,16 +27,22 @@
   },
   "homepage": "https://github.com/draeder/gunsafe#readme",
   "dependencies": {
+    "browser-signature": "^1.0.4",
     "btoa": "^1.2.1",
     "carets": "^2.5.0",
     "clipboardy": "^3.0.0",
     "elliptic": "^6.5.4",
     "gun": "^0.2020.1237",
     "gunsafe": "^1.5.0",
-    "node-machine-id": "^1.1.12"
+    "hardwareid": "^1.0.1"
   },
   "directories": {
     "test": "test"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "chai": "^4.3.6",
+    "esmify": "^2.1.1",
+    "steal": "^2.3.0",
+    "steal-tools": "^2.3.0"
+  }
 }

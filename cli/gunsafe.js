@@ -1,6 +1,7 @@
 #! /usr/bin/env node
 import fs from 'fs'
 import '../index.js'
+import hardwareid from 'hardwareid'
 import Gun from 'gun'
 import SEA from 'gun/sea.js'
 import Carets from 'carets'
@@ -42,16 +43,8 @@ async function auth(line){
   if(line === '\r') return console.log('The gunsafe name may not be empty.')
   authedUser = line.join(' ')
   console.log('Keypair for the gunsafe named,', authedUser + ', created.')
-  let key
-  try {
-    key = fs.readFileSync('./key', err => {}).toString()
-    gun.gunsafe.name(key, authedUser)
-  }
-  catch {
-    let pair = await SEA.pair()
-    fs.writeFile('./key', pair.epriv, err => {})
-    gun.gunsafe.name(pair.epriv, authedUser)
-  }
+  let key = await hardwareid()
+  gun.gunsafe.name(key, authedUser)
 }
 
 function keypair(){

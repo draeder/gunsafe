@@ -24,15 +24,16 @@ Gun.chain.gunsafe = function(opts) {
       gun.user().get('gunsafe').get('items').get(name).once(async data => {
         if(!data) return cb('Record not found')
         data = await SEA.decrypt(data, pair)
-        try { data = data.join(' '); if(!run) cb(data) } catch {}
-        try { data = JSON.parse(data) } catch {}
-
+        try { data = data.join(' '); if(!run) cb(data) } 
+        catch (err){if(err){}}
+        try { data = JSON.parse(data) } 
+        catch (err){if(err){}}
         if(typeof data === 'object'){
           let index = Object.keys(data)
           let str
           for(let i in index){
             if(data[index[i]]){
-              str = str + data[index[i]]
+              str = str + data[index[i]] + '\r\n'
             }
           }
           
@@ -57,7 +58,6 @@ Gun.chain.gunsafe = function(opts) {
     },
     list: async (del, cb) => {
       let last = []
-      last.length = 0
       gun.user().get('gunsafe').get('list').map().once(data => {
         if(last.includes(data)) return
         gun.user().get('gunsafe').get('items').get(data).once(d => {

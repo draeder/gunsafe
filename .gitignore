@@ -1,7 +1,7 @@
+http
 testing*.js
 # Logs
 bak
-test
 radata
 logs
 *.log
