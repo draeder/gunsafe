@@ -49,7 +49,7 @@ async function auth(line){
 
 function keypair(){
   let key = gun.gunsafe.key()
-  console.log(key)
+  console.log(JSON.stringify(key))
 }
 
 function peers(line){

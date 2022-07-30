@@ -1,6 +1,6 @@
 {
   "name": "gunsafe",
-  "version": "2.5.0",
+  "version": "2.6.0",
   "description": "A decentralized secure vault API built on Gun chain",
   "main": "index.js",
   "type": "module",

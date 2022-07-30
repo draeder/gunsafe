@@ -18,15 +18,21 @@ describe('Test all gunsafe methods', async () => {
     let authenticated = gun.user().is
     expect(Object.keys(authenticated).length === 3).to.equal(true)
   })
-  it('A single line record has been put to gunsafe', () => {
+  it('A single line record has been put to gunsafe', (done) => {
     gun.gunsafe.put('hi', 'hi?')
+    done()
   })
-  it('A multiline record has been put to gunsafe', () => {
+  it('A multiline record has been put to gunsafe', (done) => {
     let doc = {
       [+new Date()]: 'hi?',
       [+new Date()+1]: 'hello?',
     }
     gun.gunsafe.put('hi', doc)
+    done()
+  })
+  it('Adds a javascript function to gunsafe', (done) => {
+    gun.gunsafe.put('fn', 'let a = 1; let b = 2; global.value = a+b;')
+    done()
   })
   it('Gunsafe can get the single line record', () => {
     gun.gunsafe.get('hi', false, false, data => {
@@ -35,7 +41,19 @@ describe('Test all gunsafe methods', async () => {
   })
   it('Gunsafe can get the multiline record', () => {
     gun.gunsafe.get('hi', false, false, data => {
-      expect(data === 'hi?').to.equal(true)
+      expect(global.value).to.equal(3)
+    })
+  })
+  it('Gunsafe can get and execute the function in global scope', (done) => {
+    gun.gunsafe.get('fn', true, false, data => {
+      expect(data === 'hi').to.equal(true)
+      done()
+    })
+  })
+  it('Gunsafe can get and execute the function in global scope', (done) => {
+    gun.gunsafe.get('fn', true, false, data => {
+      expect(data === 'hi').to.equal(true)
+      done()
     })
   })
   it('Gunsafe can list the available record names', () => {

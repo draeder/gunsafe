@@ -1,4 +1,4 @@
-import EventEmitter from 'events'
+import crypto from 'crypto'
 import Gun from 'gun'
 import SEA from 'gun/sea.js'
 import Pair from './pair.js'
@@ -6,12 +6,11 @@ import Pair from './pair.js'
 Gun.chain.gunsafe = function(opts) {
   const gun = this
 
-  const events = new EventEmitter()
-
   let pair
   gun.gunsafe = {
     name: async (key, name) => {
-      pair = await Pair(key, name)
+      let hash = crypto.createHash('SHA256').update(name).digest('hex')
+      pair = await Pair(key, hash)
       gun.user().auth(pair)
     },
     put: async (name, data) => {
@@ -24,7 +23,7 @@ Gun.chain.gunsafe = function(opts) {
       gun.user().get('gunsafe').get('items').get(name).once(async data => {
         if(!data) return cb('Record not found')
         data = await SEA.decrypt(data, pair)
-        try { data = data.join(' '); if(!run) cb(data) } 
+        try { data = data.join(' '); if(!run && !global) cb(data) } 
         catch (err){if(err){}}
         try { data = JSON.parse(data) } 
         catch (err){if(err){}}
@@ -44,7 +43,6 @@ Gun.chain.gunsafe = function(opts) {
         if(run){
           try{
             if(global === false) {
-              console.log('Running Function')
               let fn = new Function(data); 
               fn() 
             }
